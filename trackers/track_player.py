@@ -6,11 +6,20 @@ from utils import centre_of_bbox,measure_dist,get_foot_position,measure_xy_dist,
 class TrackPlayer:
     def __init__(self,model_path):
         self.model = YOLO(model_path)
-        self.role_history = {} #Keeps track of roles per track ID
 
     #Assign roles in the video based on proximity of the keypoints
     def assign_and_filter_roles(self,court_layout,player_detections):
-        detections_first_frame = player_detections[18] #Detect the first frame only
+        """
+        Assigns roles to players based on their proximity to the court lines
+        Args:
+            court_layout (dict): Dictionary of court description
+            player_detections (list): List of dictionaries with player id and bounding box coordinates
+        Returns:
+            filtered_players_detection (list): List of dictionaries with player id and bounding box coordinates
+            filtered_others_detection (list): List of dictionaries with other people id and bounding box coordinates
+            assign_roles_per_frame (list): List of dictionaries with player id and their roles
+        """
+        detections_first_frame = player_detections[18] #Detect the 17th frame since ball kid is only present in the 17th frame
         filtered_players_detection = [] #Filter only the players
         filtered_others_detection = [] #Filter ball kids, judges...
         assign_roles_per_frame = []
@@ -37,6 +46,14 @@ class TrackPlayer:
         return filtered_players_detection,filtered_others_detection,assign_roles_per_frame
             
     def calculate_player_dist_from_court(self,court_layout,player_dict):
+        """
+        Calculates the distance of the players from the court lines and assigns roles based on the distance
+        Args:
+            court_layout (dict): Dictionary of court description
+            player_dict (dict): Dictionary of player id and bounding box coordinates
+        Returns:
+            role_assignemnts (dict): Dictionary of player id and their roles
+        """
         role_assignemnts = {}
 
         top_baseline_length = court_layout["top_baseline"]
@@ -49,7 +66,7 @@ class TrackPlayer:
             x_middle_bbox = get_foot_position(bbox=bbox)
             x_foot,y_foot = x_middle_bbox
 
-            dist_from_top_baseline = distance_point_to_segment(x_middle_bbox,*top_baseline_length)
+            dist_from_top_baseline = distance_point_to_segment(x_middle_bbox,*top_baseline_length) #* means unpack the tuple
             dist_from_btm_baseline = distance_point_to_segment(x_middle_bbox,*btm_baseline_length)
             dist_from_net_left = measure_dist(x_middle_bbox,net_left)
             dist_from_net_right = measure_dist(x_middle_bbox,net_right)
@@ -153,6 +170,15 @@ class TrackPlayer:
         return output_video_frames
     
     def draw_others_bounding_box(self,video_frames,other_detections,role_assignments):
+        """
+        Draws bounding box around the other people in the video
+        Args:
+            video_frames (list): List of frames as an array
+            other_detections (list): List of dictionaries with player id and bounding box coordinates
+            role_assignments (list): List of dictionaries with player id and their roles
+        Returns:
+            output_video_frames (list): List of frames with bounding box around the other people
+        """
         output_video_frames = []
         for frame, other_dict, roles in zip(video_frames,other_detections,role_assignments):
 
