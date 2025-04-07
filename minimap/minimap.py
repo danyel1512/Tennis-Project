@@ -122,6 +122,9 @@ class DrawMinimap():
         self.draw_keypoints = draw_keypoints
    
     def define_court_lines(self):
+        """
+        Define the lines on the court        
+        """
         self.lines = [
            (0,1),
            (1,3),
