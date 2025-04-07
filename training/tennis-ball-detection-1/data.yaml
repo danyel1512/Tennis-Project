@@ -1,0 +1,12 @@
+names:
+- tennis ball
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: tennis-ball-detection-qtexm
+  url: https://universe.roboflow.com/projects-cbu8v/tennis-ball-detection-qtexm/dataset/1
+  version: 1
+  workspace: projects-cbu8v
+test: ../test/images
+train: ../train/images
+val: ../valid/images
